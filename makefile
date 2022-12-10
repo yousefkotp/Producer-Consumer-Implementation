@@ -1,5 +1,5 @@
 target:
-	g++ -c producer.cc
+	g++ -c producer.cpp
 	g++ -o producer producer.o
-	g++ -c consumer.cc
+	g++ -c consumer.cpp
 	g++ -o consumer consumer.o
