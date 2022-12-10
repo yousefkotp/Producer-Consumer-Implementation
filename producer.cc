@@ -2,7 +2,6 @@
 #include <random>
 #include <iomanip>      // std::setprecision
 #include <sys/types.h>
-#include <sys/ipc.h>
 #include <bits/stdc++.h>
 #include <sys/shm.h>
 #ifdef _WIN32
@@ -25,6 +24,9 @@ void initializeMap(){
     commodityToIndex["NICKEL"]=8;
     commodityToIndex["SILVER"]=9;
     commodityToIndex["ZINC"]=10;
+}
+void initializeSharedMemory(){
+    
 }
 int main(int argc, char** argv){
     initializeMap();
