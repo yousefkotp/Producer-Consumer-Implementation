@@ -5,3 +5,6 @@ main.o
 main
 .vscode/settings.json
 err.txt
+consumer.o
+consumer.cc
+consumer
