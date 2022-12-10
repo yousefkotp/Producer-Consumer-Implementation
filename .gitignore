@@ -4,3 +4,4 @@ producer
 main.o
 main
 .vscode/settings.json
+err.txt
