@@ -90,10 +90,10 @@ void consume(){
     bufferSize = (int * )sharedMemory;
     *bufferSize = bufferInput;
 
-    int *currentSize = (int *) sharedMemory+4;
+    currentSize = (int *) sharedMemory+4;
     memset(currentSize,0,sizeof(int));
 
-    int *currentItem= (int *) sharedMemory+8;
+    currentItem= (int *) sharedMemory+8;
     memset(currentSize,0,sizeof(int));
 
     emptyy = (sem_t *) sharedMemory+12; //number of empty slots
@@ -106,6 +106,8 @@ void consume(){
     sem_init(mutexx,1,1);
 
     prices = (pair<int,double>*)sharedMemory+12+32+32+32;
+    for(int i=0;i<11;i++)
+        prices[i].second=0;
 
 
     while(true){
