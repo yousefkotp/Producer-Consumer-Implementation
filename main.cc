@@ -6,6 +6,7 @@
 #include <cstring>
 #include <semaphore.h>
 #define ANSI_COLOR_RED     "\033[;31m"
+#define ANSI_COLOR_BLUE   "\033[34m"
 #define ANSI_COLOR_GREEN   "\033[;32m"
 #define ANSI_COLOR_RESET   "\033[0m"
 using namespace std;
@@ -133,7 +134,14 @@ int main(int argc, char** argv){
     cout<<"+-------------------------------------+"<<endl;
     for(int i=0;i<11;i++){
         cout<<"| "<<COMMODITIES[i];
-        printf("|%7.2lf  |%7.2lf  |\n",0.0,0.0);
+        printf("|");
+        printf(ANSI_COLOR_BLUE);
+        printf("%7.2lf  ",0.0);
+        printf(ANSI_COLOR_RESET);
+        printf("|");
+        printf(ANSI_COLOR_BLUE);
+        printf("%7.2lf  |\n",0.0);
+        printf(ANSI_COLOR_RESET);
     }
     consume();
     
