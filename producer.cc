@@ -24,9 +24,6 @@ void initializeMap(){
     commodityToIndex["SILVER"]=9;
     commodityToIndex["ZINC"]=10;
 }
-void initializeSharedMemory(){
-
-}
 
 int main(int argc, char** argv){
     initializeMap();

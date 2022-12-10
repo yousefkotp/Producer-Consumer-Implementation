@@ -82,7 +82,7 @@ void updateCommodityPrice(int commodityIndex,double currentPrice){
 
 
 
-void init(){
+void consume(){
     IPC_key = ftok("interprocesscommunication",65); 
     sharedMemoryID = shmget(IPC_key,1024,0666|IPC_CREAT); 
     sharedMemory= shmat(sharedMemoryID,NULL,0);
@@ -133,7 +133,7 @@ int main(int argc, char** argv){
         cout<<"| "<<COMMODITIES[i];
         printf("|%7.2lf  |%7.2lf  |\n",0.0,0.0);
     }
-    init();
+    consume();
     
     return 0;
 }
