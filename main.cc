@@ -13,9 +13,11 @@ using namespace std;
 key_t IPC_key;
 void* sharedMemory;
 int sharedMemoryID;
+int bufferSize=0;
 double* prices;
 map<string,int>indexOf;
 map<int,vector<double>>prevValues;
+map<int,double>prevAverageValues;
 string COMMODITIES[11]= {"ALUMINUM  ", "COPPER    ", "COTTON    ", "CRUDEOIL  ", "GOLD      ","LEAD      ", "MENTHAOIL ", "NATURALGAS", "NICKEL    ", "SILVER    ", "ZINC      "};
 void initializeMap(){
     indexOf["ALUMINUM"]=0;
@@ -57,17 +59,17 @@ void init(){
 }
 
 void consume(){
-    
     while(true){
         sleep(0.5);
         for(int i=0;i<11;i++){
-            printf("\033[1;1H|");
+            printf("\033[1;1H");
+            
             double currentPrice = prices[i];
             if(prevValues[i].size()==0){//aka empty
                 if(currentPrice>0.00001){
                     printf("\033[%d;%dH",(4+i),14);
                     printf(ANSI_COLOR_GREEN);
-                    printf("%7.2lf ↑",currentPrice);
+                    printf("%7.2lf ↑|",currentPrice);
                     printf(ANSI_COLOR_RESET);
                     prevValues[i].push_back(currentPrice);
                 }
@@ -76,26 +78,53 @@ void consume(){
                 printf("\033[%d;%dH",(4+i),14);
                 if(currentPrice-previousValue>0.001){
                     printf(ANSI_COLOR_GREEN);
-                    printf("%7.2lf ↑",currentPrice);
+                    printf("%7.2lf ↑|",currentPrice);
                     printf(ANSI_COLOR_RESET);
                     prevValues[i].push_back(currentPrice);
                 }else if (previousValue-currentPrice>0.001){
                     printf(ANSI_COLOR_RED);
-                    printf("%7.2lf ↓",currentPrice);
+                    printf("%7.2lf ↓|",currentPrice);
                     printf(ANSI_COLOR_RESET);
                     prevValues[i].push_back(currentPrice);
                 }else{
-                    printf("%7.2lf -",currentPrice);
+                    printf("%7.2lf -|",currentPrice);
                 }
                 if(prevValues[i].size()>5)
                     prevValues[i].erase(prevValues[i].begin());
-                
             }
+            int sum =0,j=0;
+            for(j=0;j<5 && j<prevValues[i].size();j++){
+                sum+=prevValues[i][j];
+            }
+            if(j==0)
+                continue;
+            double average = sum*1.0/j;
+            
+            if(prevAverageValues[i]<0.0001){
+                printf(ANSI_COLOR_GREEN);
+                printf("%7.2lf ↑",average);
+                printf(ANSI_COLOR_RESET);
+            }else{
+                double prevAverageValue = prevAverageValues[i];
+                if(average-prevAverageValue>0.0001){
+                    printf(ANSI_COLOR_GREEN);
+                    printf("%7.2lf ↑",average);
+                    printf(ANSI_COLOR_RESET);
+                }else if(prevAverageValue-average>0.0001){
+                    printf(ANSI_COLOR_RED);
+                    printf("%7.2lf ↓",average);
+                    printf(ANSI_COLOR_RESET);
+                }else{
+                    printf("%7.2lf -",average);
+                }
+            }
+            prevAverageValues[i]=average;
         }
     }
 }
-int main(){
+int main(int argc, char** argv){
     printf("\e[1;1H\e[2J");
+    bufferSize= stoi(argv[1]);
     initializeMap();
     init();
     cout<<"+-------------------------------------+"<<endl;
