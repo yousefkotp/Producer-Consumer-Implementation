@@ -6,9 +6,11 @@
 #include <bits/stdc++.h>
 #include <semaphore.h>
 #include <unistd.h>
+#include <chrono>
 
 
 using namespace std;
+using namespace std::chrono;
 
 map<string,int>commodityToIndex;
 void initializeMap(){
@@ -50,13 +52,19 @@ int main(int argc, char** argv){
 
     while(true){
         double number = normalDistribution(randomVariablegenerator);
+        struct timespec start;
+        time_t now = system_clock::to_time_t(system_clock::now());
+        std::cerr<<"["<<put_time(localtime(&now),"%M/%d/%Y %H:%M:%S")<<"] "<<commodityName<<": generating a new value "<<setprecision(2)<<fixed<< number<<endl;;
         sem_wait(empty);
+        std::cerr<<"trying to get mutex on shared buffer"<<endl;
         sem_wait(mutex);
+        std::cerr<<"placing "<<number<<" on shared buffer"<<endl;
         array[*currentSize].first= commodityIndex;
         array[*currentSize].second=number;
         *currentSize = (*currentSize+1)%*bufferSize;
         sem_post(mutex);
         sem_post(full);
+        std::cerr<<"sleeping for "<<timeOut<<" ms"<<endl;
         sleep(timeOut/1000);
     }
     
