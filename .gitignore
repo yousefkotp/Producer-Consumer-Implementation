@@ -3,3 +3,4 @@ producer.o
 producer
 main.o
 main
+.vscode/settings.json

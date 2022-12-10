@@ -27,6 +27,61 @@ sem_t* mutexx;
 
 string COMMODITIES[11]= {"ALUMINUM  ", "COPPER    ", "COTTON    ", "CRUDEOIL  ", "GOLD      ","LEAD      ", "MENTHAOIL ", "NATURALGAS", "NICKEL    ", "SILVER    ", "ZINC      "};
 
+void updateCommodityPrice(int commodityIndex,double currentPrice){
+    printf("\033[1;1H");
+    if(prevValues[commodityIndex].size()==0){//aka empty
+        printf("\033[%d;%dH",(4+commodityIndex),14);
+        printf(ANSI_COLOR_GREEN);
+        printf("%7.2lf ↑|",currentPrice);
+        printf(ANSI_COLOR_RESET);
+        prevValues[commodityIndex].push_back(currentPrice);
+    }else{
+        double previousValue = prevValues[commodityIndex][prevValues[commodityIndex].size()-1];
+        printf("\033[%d;%dH",(4+commodityIndex),14);
+        if(currentPrice-previousValue>0.001){
+            printf(ANSI_COLOR_GREEN);
+            printf("%7.2lf ↑",currentPrice);
+            printf(ANSI_COLOR_RESET);
+        }else if (previousValue-currentPrice>0.001){
+            printf(ANSI_COLOR_RED);
+            printf("%7.2lf ↓",currentPrice);
+            printf(ANSI_COLOR_RESET);
+        }else{
+            printf("%7.2lf -",currentPrice);
+        }
+        cout<<"|";
+        prevValues[commodityIndex].push_back(currentPrice);
+        if(prevValues[commodityIndex].size()>5)
+            prevValues[commodityIndex].erase(prevValues[commodityIndex].begin());
+    }
+    int sum =0,j=0;
+    for(j=0;j<5 && j<prevValues[commodityIndex].size();j++){
+        sum+=prevValues[commodityIndex][j];
+    }
+    double average = sum*1.0/j;
+    if(prevAverageValues[commodityIndex]<0.0001){
+        printf(ANSI_COLOR_GREEN);
+        printf("%7.2lf ↑",average);
+        printf(ANSI_COLOR_RESET);
+    }else{
+        double prevAverageValue = prevAverageValues[commodityIndex];
+        if(average-prevAverageValue>0.0001){
+            printf(ANSI_COLOR_GREEN);
+            printf("%7.2lf ↑",average);
+            printf(ANSI_COLOR_RESET);
+        }else if(prevAverageValue-average>0.0001){
+            printf(ANSI_COLOR_RED);
+            printf("%7.2lf ↓",average);
+            printf(ANSI_COLOR_RESET);
+        }else{
+            printf("%7.2lf -",average);
+        }
+    }
+    prevAverageValues[commodityIndex]=average;
+}
+
+
+
 void init(){
     IPC_key = ftok("interprocesscommunication",65); 
     sharedMemoryID = shmget(IPC_key,1024,0666|IPC_CREAT); 
@@ -51,13 +106,26 @@ void init(){
     sem_init(mutexx,1,1);
 
     prices = (pair<int,double>*)sharedMemory+12+32+32+32;
+
+
+    while(true){
+        sem_wait(full);
+        sem_wait(mutexx);
+        cout<<"|"<<endl;
+        pair<int,double>p = prices[*currentItem];
+        *currentItem = (*currentItem+1)%*bufferSize;
+        int commodityIndex = p.first;
+        double commodityPrice = p.second;
+        updateCommodityPrice(commodityIndex,commodityPrice);
+        sem_post(mutexx);
+        sem_post(emptyy);
+    }
 }   
 
 
 int main(int argc, char** argv){
     bufferInput= stoi(argv[1]);
     printf("\e[1;1H\e[2J");
-    init();
     cout<<"+-------------------------------------+"<<endl;
     cout<<"| Currency   | Price  | AvgPrice |"<<endl;
     cout<<"+-------------------------------------+"<<endl;
@@ -65,22 +133,7 @@ int main(int argc, char** argv){
         cout<<"| "<<COMMODITIES[i];
         printf("|%7.2lf  |%7.2lf  |\n",0.0,0.0);
     }
-    while(true){
-        cout<<"waiting"<<endl;
-        sem_wait(full);
-        cout<<"Passed full";
-        sem_wait(mutexx);
-        cout<<"passed mutux";
-        pair<int,double>p = prices[*currentItem];
-        // *currentItem = (*currentItem+1)%*bufferSize;
-        // int commodityIndex = p.first;
-        // double commodityPrice = p.second;
-        // //printf("\033[1;1H");
-        // //printf("\033[%d;%dH",(4+commodityIndex),14);
-        // cout<<commodityIndex<<" "<<commodityPrice<<endl;
-        //printf("%7.2lf |",commodityPrice);
-        sem_post(mutexx);
-        sem_post(emptyy);
-    }
+    init();
+    
     return 0;
 }

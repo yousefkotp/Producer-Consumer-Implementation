@@ -53,17 +53,13 @@ int main(int argc, char** argv){
 
     while(true){
         double number = normalDistribution(randomVariablegenerator);
-        cout<<"waiting"<<endl;
         sem_wait(empty);
-        cout<<"Passed empty"<<endl;
         sem_wait(mutex);
-        cout<<"passed mutex"<<endl;
         array[*currentSize].first= commodityIndex;
         array[*currentSize].second=number;
         *currentSize = (*currentSize+1)%*bufferSize;
         sem_post(mutex);
         sem_post(full);
-        cout<<*bufferSize<<endl;
         sleep(timeOut/1000);
     }
     
