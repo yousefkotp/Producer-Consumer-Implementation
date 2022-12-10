@@ -107,10 +107,6 @@ void consume(){
     sem_init(mutexx,1,1);
 
     prices = (pair<int,double>*)sharedMemory+12+32+32+32;
-    for(int i=0;i<11;i++)
-        prices[i].second=0;
-
-
     while(true){
         sem_wait(full);
         sem_wait(mutexx);
