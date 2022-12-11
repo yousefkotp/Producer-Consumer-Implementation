@@ -33,15 +33,15 @@ int main(int argc, char** argv){
     double commodityMean = stoi(argv[2]);
     double standardDeviation = stoi(argv[3]);
     double timeOut = stoi(argv[4]);
+    int bufferSize = stoi(argv[5]);
 
     default_random_engine randomVariablegenerator;
     normal_distribution<double> normalDistribution(commodityMean,standardDeviation);
     int commodityIndex = commodityToIndex[commodityName];
 
     key_t IPC_key = ftok("interprocesscommunication",65);
-    int sharedMemoryID = shmget(IPC_key,1024,0666);
+    int sharedMemoryID = shmget(IPC_key,bufferSize+12+32+32+32,0666);
     void* sharedMemory= shmat(sharedMemoryID,NULL,0);
-    int* bufferSize = (int *) sharedMemory;
     int* currentSize = (int *) sharedMemory+4;
     int *currentItem = (int *) sharedMemory+8;
     sem_t* empty = (sem_t *) sharedMemory+12; //number of empty slots
@@ -61,7 +61,7 @@ int main(int argc, char** argv){
         std::cerr<<"placing "<<number<<" on shared buffer"<<endl;
         array[*currentSize].first= commodityIndex;
         array[*currentSize].second=number;
-        *currentSize = (*currentSize+1)%*bufferSize;
+        *currentSize = (*currentSize+1)%bufferSize;
         sem_post(mutex);
         sem_post(full);
         std::cerr<<"sleeping for "<<timeOut<<" ms"<<endl;

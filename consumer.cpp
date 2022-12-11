@@ -17,9 +17,8 @@ int sharedMemoryID;
 map<string,int>indexOf;
 map<int,vector<double>>prevValues;
 map<int,double>prevAverageValues;
-int bufferInput;
 pair<int,double>* prices;
-int* bufferSize;
+int bufferSize;
 int* currentItem;
 int* currentSize;
 sem_t* emptyy;
@@ -85,11 +84,8 @@ void updateCommodityPrice(int commodityIndex,double currentPrice){
 
 void consume(){
     IPC_key = ftok("interprocesscommunication",65); 
-    sharedMemoryID = shmget(IPC_key,1024,0666|IPC_CREAT); 
+    sharedMemoryID = shmget(IPC_key,bufferSize+12+32+32+32,0666|IPC_CREAT); 
     sharedMemory= shmat(sharedMemoryID,NULL,0);
-
-    bufferSize = (int * )sharedMemory;
-    *bufferSize = bufferInput;
 
     currentSize = (int *) sharedMemory+4;
     memset(currentSize,0,sizeof(int));
@@ -98,7 +94,7 @@ void consume(){
     memset(currentSize,0,sizeof(int));
 
     emptyy = (sem_t *) sharedMemory+12; //number of empty slots
-    sem_init(emptyy,1,*bufferSize);
+    sem_init(emptyy,1,bufferSize);
 
     full = (sem_t *) sharedMemory+12+32;//number of full slots
     sem_init(full,1,0);
@@ -112,7 +108,7 @@ void consume(){
         sem_wait(mutexx);
         cout<<"|"<<endl;
         pair<int,double>p = prices[*currentItem];
-        *currentItem = (*currentItem+1)%*bufferSize;
+        *currentItem = (*currentItem+1)%bufferSize;
         int commodityIndex = p.first;
         double commodityPrice = p.second;
         updateCommodityPrice(commodityIndex,commodityPrice);
@@ -123,7 +119,7 @@ void consume(){
 
 
 int main(int argc, char** argv){
-    bufferInput= stoi(argv[1]);
+    bufferSize= stoi(argv[1]);
     printf("\e[1;1H\e[2J");
     cout<<"+-------------------------------------+"<<endl;
     cout<<"| Currency   | Price  | AvgPrice |"<<endl;
@@ -136,8 +132,9 @@ int main(int argc, char** argv){
         printf(ANSI_COLOR_RESET);
         printf("|");
         printf(ANSI_COLOR_BLUE);
-        printf("%7.2lf  |\n",0.0);
+        printf("%7.2lf  ",0.0);
         printf(ANSI_COLOR_RESET);
+        printf("|\n");
     }
     consume();
     
