@@ -2,9 +2,9 @@
 #include <sys/ipc.h>
 #include <sys/shm.h>
 #include <sys/types.h>
-#include <sys/sem.h>
 #include <bits/stdc++.h>
 #include <cstring>
+#include "MySemaphore.h"
 
 #define ANSI_COLOR_RED     "\033[;31m"
 #define ANSI_COLOR_BLUE   "\033[34m"
@@ -79,20 +79,6 @@ void updateCommodityPrice(int commodityIndex,double currentPrice){
     prevAverageValues[commodityIndex]=average;
 }
 
-struct sembuf signalSemaphore(int index){
-    struct sembuf sem_op;
-    sem_op.sem_num = index;
-    sem_op.sem_op = 1;
-    sem_op.sem_flg = 0;
-    return sem_op;
-}
-struct sembuf waitSemaphore(int index){
-    struct sembuf sem_op;
-    sem_op.sem_num = index;
-    sem_op.sem_op = -1;
-    sem_op.sem_flg = 0;
-    return sem_op;
-}
 
 void consume(){
     IPC_key = ftok("interprocesscommunication",65); 
@@ -113,14 +99,11 @@ void consume(){
     semctl(semaphoreSetId,1,SETVAL,bufferSize); // empty at index 1
     semctl(semaphoreSetId,2,SETVAL,0); //full at index 2
 
-    cout<<semaphoreSetId<<endl;
     while(true){
         sem_op = waitSemaphore(2);
         semop(semaphoreSetId,&sem_op,1);
         sem_op = waitSemaphore(0);
         semop(semaphoreSetId,&sem_op,1);
-        //sem_wait(full);
-        //sem_wait(mutexx);
         cout<<"|"<<endl;
         pair<int,double>p = prices[*currentItem];
         *currentItem = (*currentItem+1)%bufferSize;
@@ -131,8 +114,6 @@ void consume(){
         semop(semaphoreSetId,&sem_op,1);
         sem_op = signalSemaphore(1);
         semop(semaphoreSetId,&sem_op,1);
-        //sem_post(mutexx);
-        //sem_post(emptyy);
     }
 }   
 

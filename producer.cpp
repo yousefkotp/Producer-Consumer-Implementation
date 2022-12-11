@@ -3,27 +3,12 @@
 #include <iomanip>      // std::setprecision
 #include <sys/types.h>
 #include <sys/ipc.h>
-#include <sys/sem.h>
 #include <sys/shm.h>
 #include <bits/stdc++.h>
 #include <unistd.h>
 #include <chrono>
+#include "MySemaphore.h"
 
-
-struct sembuf signalSemaphore(int index){
-    struct sembuf sem_op;
-    sem_op.sem_num = index;
-    sem_op.sem_op = 1;
-    sem_op.sem_flg = 0;
-    return sem_op;
-}
-struct sembuf waitSemaphore(int index){
-    struct sembuf sem_op;
-    sem_op.sem_num = index;
-    sem_op.sem_op = -1;
-    sem_op.sem_flg = 0;
-    return sem_op;
-}
 
 
 using namespace std;
@@ -71,11 +56,9 @@ int main(int argc, char** argv){
         struct timespec start;
         time_t now = system_clock::to_time_t(system_clock::now());
         std::cerr<<"["<<put_time(localtime(&now),"%M/%d/%Y %H:%M:%S")<<"] "<<commodityName<<": generating a new value "<<setprecision(2)<<fixed<< number<<endl;;
-        //sem_wait(empty);
         sem_op = waitSemaphore(1);
         semop(semaphoreSetId,&sem_op,1);
         std::cerr<<"trying to get mutex on shared buffer"<<endl;
-        //sem_wait(mutex);
         sem_op = waitSemaphore(0);
         semop(semaphoreSetId,&sem_op,1);
         std::cerr<<"placing "<<number<<" on shared buffer"<<endl;
@@ -84,10 +67,8 @@ int main(int argc, char** argv){
         *currentSize = (*currentSize+1)%bufferSize;
         sem_op = signalSemaphore(0);
         semop(semaphoreSetId,&sem_op,1);
-        //sem_post(mutex);
         sem_op = signalSemaphore(2);
         semop(semaphoreSetId,&sem_op,1);
-        //sem_post(full);
         std::cerr<<"sleeping for "<<timeOut<<" ms"<<endl;
         sleep(timeOut/1000);
     }
