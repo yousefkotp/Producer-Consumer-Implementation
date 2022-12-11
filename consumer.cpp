@@ -2,9 +2,9 @@
 #include <sys/ipc.h>
 #include <sys/shm.h>
 #include <sys/types.h>
+#include <sys/sem.h>
 #include <bits/stdc++.h>
 #include <cstring>
-#include <semaphore.h>
 #define ANSI_COLOR_RED     "\033[;31m"
 #define ANSI_COLOR_BLUE   "\033[34m"
 #define ANSI_COLOR_GREEN   "\033[;32m"
@@ -21,9 +21,9 @@ pair<int,double>* prices;
 int bufferSize;
 int* currentItem;
 int* currentSize;
-sem_t* emptyy;
-sem_t* full;
-sem_t* mutexx;
+
+
+int* semaphoreSetId;
 
 string COMMODITIES[11]= {"ALUMINUM  ", "COPPER    ", "COTTON    ", "CRUDEOIL  ", "GOLD      ","LEAD      ", "MENTHAOIL ", "NATURALGAS", "NICKEL    ", "SILVER    ", "ZINC      "};
 
@@ -80,39 +80,60 @@ void updateCommodityPrice(int commodityIndex,double currentPrice){
     prevAverageValues[commodityIndex]=average;
 }
 
-
+struct sembuf signalSemaphore(int index){
+    struct sembuf sem_op;
+    sem_op.sem_num = index;
+    sem_op.sem_op = 1;
+    sem_op.sem_flg = 0;
+    return sem_op;
+}
+struct sembuf waitSemaphore(int index){
+    struct sembuf sem_op;
+    sem_op.sem_num = index;
+    sem_op.sem_op = -1;
+    sem_op.sem_flg = 0;
+    return sem_op;
+}
 
 void consume(){
     IPC_key = ftok("interprocesscommunication",65); 
     sharedMemoryID = shmget(IPC_key,bufferSize+8+32+32+32,0666|IPC_CREAT); 
     sharedMemory= shmat(sharedMemoryID,NULL,0);
+    memset(sharedMemory,bufferSize+8+32+32+32,0);
+
     currentSize = (int *) sharedMemory;
-    memset(currentSize,0,sizeof(int));
-
     currentItem= (int *) sharedMemory+4;
-    memset(currentSize,0,sizeof(int));
-
-    emptyy = (sem_t *) sharedMemory+8; //number of empty slots
-    sem_init(emptyy,1,bufferSize);
-
-    full = (sem_t *) sharedMemory+8+32;//number of full slots
-    sem_init(full,1,0);
-
-    mutexx = (sem_t *) sharedMemory+8+32+32;
-    sem_init(mutexx,1,1);
+    semaphoreSetId = (int *) sharedMemory+8;
 
     prices = (pair<int,double>*)sharedMemory+8+32+32+32;
+    
+    struct sembuf sem_op;
+    *semaphoreSetId = semget(IPC_key,3,0666 | IPC_CREAT | IPC_EXCL);
+    semctl(*semaphoreSetId,0,SETVAL,1); //mutex at index 0
+    semctl(*semaphoreSetId,1,SETVAL,bufferSize); // empty at index 1
+    semctl(*semaphoreSetId,2,SETVAL,0); //full at index 2
+
+
     while(true){
-        sem_wait(full);
-        sem_wait(mutexx);
+        sleep(1);
+        sem_op = waitSemaphore(2);
+        semop(*semaphoreSetId,&sem_op,1);
+        sem_op = waitSemaphore(0);
+        semop(*semaphoreSetId,&sem_op,1);
+        //sem_wait(full);
+        //sem_wait(mutexx);
         cout<<"|"<<endl;
         pair<int,double>p = prices[*currentItem];
         *currentItem = (*currentItem+1)%bufferSize;
         int commodityIndex = p.first;
         double commodityPrice = p.second;
         updateCommodityPrice(commodityIndex,commodityPrice);
-        sem_post(mutexx);
-        sem_post(emptyy);
+        sem_op = signalSemaphore(0);
+        semop(*semaphoreSetId,&sem_op,1);
+        sem_op = signalSemaphore(1);
+        semop(*semaphoreSetId,&sem_op,1);
+        //sem_post(mutexx);
+        //sem_post(emptyy);
     }
 }   
 
