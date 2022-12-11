@@ -56,15 +56,15 @@ int main(int argc, char** argv){
     int commodityIndex = commodityToIndex[commodityName];
 
     key_t IPC_key = ftok("interprocesscommunication",65);
-    int sharedMemoryID = shmget(IPC_key,bufferSize+8+32+32+32,0666);
+    int sharedMemoryID = shmget(IPC_key,bufferSize+8,0666);
     void* sharedMemory= shmat(sharedMemoryID,NULL,0);
     int* currentSize = (int *) sharedMemory;
     int *currentItem = (int *) sharedMemory+4;
 
     struct sembuf sem_op;
-    int* semaphoreSetId = (int *) sharedMemory+8;
+    int semaphoreSetId =semget(IPC_key,3,0666);
     
-    pair<int,double>*array = (pair<int,double>* )sharedMemory+8+32+32+32;
+    pair<int,double>*array = (pair<int,double>* )sharedMemory+8;
 
     while(true){
         double number = normalDistribution(randomVariablegenerator);
@@ -73,20 +73,20 @@ int main(int argc, char** argv){
         std::cerr<<"["<<put_time(localtime(&now),"%M/%d/%Y %H:%M:%S")<<"] "<<commodityName<<": generating a new value "<<setprecision(2)<<fixed<< number<<endl;;
         //sem_wait(empty);
         sem_op = waitSemaphore(1);
-        semop(*semaphoreSetId,&sem_op,1);
+        semop(semaphoreSetId,&sem_op,1);
         std::cerr<<"trying to get mutex on shared buffer"<<endl;
         //sem_wait(mutex);
         sem_op = waitSemaphore(0);
-        semop(*semaphoreSetId,&sem_op,1);
+        semop(semaphoreSetId,&sem_op,1);
         std::cerr<<"placing "<<number<<" on shared buffer"<<endl;
         array[*currentSize].first= commodityIndex;
         array[*currentSize].second=number;
         *currentSize = (*currentSize+1)%bufferSize;
         sem_op = signalSemaphore(0);
-        semop(*semaphoreSetId,&sem_op,1);
+        semop(semaphoreSetId,&sem_op,1);
         //sem_post(mutex);
         sem_op = signalSemaphore(2);
-        semop(*semaphoreSetId,&sem_op,1);
+        semop(semaphoreSetId,&sem_op,1);
         //sem_post(full);
         std::cerr<<"sleeping for "<<timeOut<<" ms"<<endl;
         sleep(timeOut/1000);

@@ -5,6 +5,7 @@
 #include <sys/sem.h>
 #include <bits/stdc++.h>
 #include <cstring>
+
 #define ANSI_COLOR_RED     "\033[;31m"
 #define ANSI_COLOR_BLUE   "\033[34m"
 #define ANSI_COLOR_GREEN   "\033[;32m"
@@ -21,9 +22,7 @@ pair<int,double>* prices;
 int bufferSize;
 int* currentItem;
 int* currentSize;
-
-
-int* semaphoreSetId;
+int semaphoreSetId;
 
 string COMMODITIES[11]= {"ALUMINUM  ", "COPPER    ", "COTTON    ", "CRUDEOIL  ", "GOLD      ","LEAD      ", "MENTHAOIL ", "NATURALGAS", "NICKEL    ", "SILVER    ", "ZINC      "};
 
@@ -97,29 +96,29 @@ struct sembuf waitSemaphore(int index){
 
 void consume(){
     IPC_key = ftok("interprocesscommunication",65); 
-    sharedMemoryID = shmget(IPC_key,bufferSize+8+32+32+32,0666|IPC_CREAT); 
+    sharedMemoryID = shmget(IPC_key,bufferSize+8,0666|IPC_CREAT); 
     sharedMemory= shmat(sharedMemoryID,NULL,0);
-    memset(sharedMemory,bufferSize+8+32+32+32,0);
+    memset(sharedMemory,bufferSize+8,0);
 
     currentSize = (int *) sharedMemory;
     currentItem= (int *) sharedMemory+4;
-    semaphoreSetId = (int *) sharedMemory+8;
 
-    prices = (pair<int,double>*)sharedMemory+8+32+32+32;
+    prices = (pair<int,double>*)sharedMemory+8;
+
+        
     
     struct sembuf sem_op;
-    *semaphoreSetId = semget(IPC_key,3,0666 | IPC_CREAT | IPC_EXCL);
-    semctl(*semaphoreSetId,0,SETVAL,1); //mutex at index 0
-    semctl(*semaphoreSetId,1,SETVAL,bufferSize); // empty at index 1
-    semctl(*semaphoreSetId,2,SETVAL,0); //full at index 2
+    semaphoreSetId = semget(IPC_key,3,0666 | IPC_CREAT );
+    semctl(semaphoreSetId,0,SETVAL,1); //mutex at index 0
+    semctl(semaphoreSetId,1,SETVAL,bufferSize); // empty at index 1
+    semctl(semaphoreSetId,2,SETVAL,0); //full at index 2
 
-
+    cout<<semaphoreSetId<<endl;
     while(true){
-        sleep(1);
         sem_op = waitSemaphore(2);
-        semop(*semaphoreSetId,&sem_op,1);
+        semop(semaphoreSetId,&sem_op,1);
         sem_op = waitSemaphore(0);
-        semop(*semaphoreSetId,&sem_op,1);
+        semop(semaphoreSetId,&sem_op,1);
         //sem_wait(full);
         //sem_wait(mutexx);
         cout<<"|"<<endl;
@@ -129,9 +128,9 @@ void consume(){
         double commodityPrice = p.second;
         updateCommodityPrice(commodityIndex,commodityPrice);
         sem_op = signalSemaphore(0);
-        semop(*semaphoreSetId,&sem_op,1);
+        semop(semaphoreSetId,&sem_op,1);
         sem_op = signalSemaphore(1);
-        semop(*semaphoreSetId,&sem_op,1);
+        semop(semaphoreSetId,&sem_op,1);
         //sem_post(mutexx);
         //sem_post(emptyy);
     }
