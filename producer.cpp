@@ -34,21 +34,20 @@ int main(int argc, char** argv){
     double standardDeviation = stoi(argv[3]);
     double timeOut = stoi(argv[4]);
     int bufferSize = stoi(argv[5]);
-
     default_random_engine randomVariablegenerator;
     normal_distribution<double> normalDistribution(commodityMean,standardDeviation);
     int commodityIndex = commodityToIndex[commodityName];
 
     key_t IPC_key = ftok("interprocesscommunication",65);
-    int sharedMemoryID = shmget(IPC_key,bufferSize+12+32+32+32,0666);
+    int sharedMemoryID = shmget(IPC_key,bufferSize+8+32+32+32,0666);
     void* sharedMemory= shmat(sharedMemoryID,NULL,0);
-    int* currentSize = (int *) sharedMemory+4;
-    int *currentItem = (int *) sharedMemory+8;
-    sem_t* empty = (sem_t *) sharedMemory+12; //number of empty slots
-    sem_t* full = (sem_t *) sharedMemory+12+32;//number of full slots
-    sem_t* mutex = (sem_t *) sharedMemory+12+32+32;
+    int* currentSize = (int *) sharedMemory;
+    int *currentItem = (int *) sharedMemory+4;
+    sem_t* empty = (sem_t *) sharedMemory+8; //number of empty slots
+    sem_t* full = (sem_t *) sharedMemory+8+32;//number of full slots
+    sem_t* mutex = (sem_t *) sharedMemory+8+32+32;
     
-    pair<int,double>*array = (pair<int,double>* )sharedMemory+12+32+32+32;
+    pair<int,double>*array = (pair<int,double>* )sharedMemory+8+32+32+32;
 
     while(true){
         double number = normalDistribution(randomVariablegenerator);

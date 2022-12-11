@@ -84,25 +84,24 @@ void updateCommodityPrice(int commodityIndex,double currentPrice){
 
 void consume(){
     IPC_key = ftok("interprocesscommunication",65); 
-    sharedMemoryID = shmget(IPC_key,bufferSize+12+32+32+32,0666|IPC_CREAT); 
+    sharedMemoryID = shmget(IPC_key,bufferSize+8+32+32+32,0666|IPC_CREAT); 
     sharedMemory= shmat(sharedMemoryID,NULL,0);
-
-    currentSize = (int *) sharedMemory+4;
+    currentSize = (int *) sharedMemory;
     memset(currentSize,0,sizeof(int));
 
-    currentItem= (int *) sharedMemory+8;
+    currentItem= (int *) sharedMemory+4;
     memset(currentSize,0,sizeof(int));
 
-    emptyy = (sem_t *) sharedMemory+12; //number of empty slots
+    emptyy = (sem_t *) sharedMemory+8; //number of empty slots
     sem_init(emptyy,1,bufferSize);
 
-    full = (sem_t *) sharedMemory+12+32;//number of full slots
+    full = (sem_t *) sharedMemory+8+32;//number of full slots
     sem_init(full,1,0);
 
-    mutexx = (sem_t *) sharedMemory+12+32+32;
+    mutexx = (sem_t *) sharedMemory+8+32+32;
     sem_init(mutexx,1,1);
 
-    prices = (pair<int,double>*)sharedMemory+12+32+32+32;
+    prices = (pair<int,double>*)sharedMemory+8+32+32+32;
     while(true){
         sem_wait(full);
         sem_wait(mutexx);
@@ -122,7 +121,7 @@ int main(int argc, char** argv){
     bufferSize= stoi(argv[1]);
     printf("\e[1;1H\e[2J");
     cout<<"+-------------------------------------+"<<endl;
-    cout<<"| Currency   | Price  | AvgPrice |"<<endl;
+    cout<<"| Currency  |  Price  | AvgPrice |"<<endl;
     cout<<"+-------------------------------------+"<<endl;
     for(int i=0;i<11;i++){
         cout<<"| "<<COMMODITIES[i];
