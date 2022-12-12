@@ -8,3 +8,4 @@ err.txt
 consumer.o
 consumer.cc
 consumer
+.vscode/*
