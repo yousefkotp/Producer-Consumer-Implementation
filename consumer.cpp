@@ -102,7 +102,7 @@ void consume(){
         semop(semaphoreSetId,&sem_op,1);
         sem_op = waitSemaphore(0);
         semop(semaphoreSetId,&sem_op,1);
-        cout<<"+"<<endl;
+        cout<<"|"<<endl;
         pair<int,double>p = prices[*currentItem];
         *currentItem = (*currentItem+1)%bufferSize;
         int commodityIndex = p.first;
