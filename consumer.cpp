@@ -116,6 +116,7 @@ void consume(){
     }
 }   
 void signalHandler(int signum){
+    printf("\033[16;1H");
     shmdt(sharedMemory);
     shmctl(sharedMemoryID,IPC_RMID,NULL);
     exit(signum);
