@@ -91,8 +91,6 @@ void consume(){
 
     prices = (pair<int,double>*)sharedMemory+8;
 
-        
-    
     struct sembuf sem_op;
     semaphoreSetId = semget(IPC_key,3,0666 | IPC_CREAT );
     semctl(semaphoreSetId,0,SETVAL,1); //mutex at index 0
