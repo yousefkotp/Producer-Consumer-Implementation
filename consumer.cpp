@@ -5,6 +5,7 @@
 #include <bits/stdc++.h>
 #include <cstring>
 #include "MySemaphore.h"
+#include <signal.h>
 
 #define ANSI_COLOR_RED     "\033[;31m"
 #define ANSI_COLOR_BLUE   "\033[34m"
@@ -81,7 +82,7 @@ void updateCommodityPrice(int commodityIndex,double currentPrice){
 
 
 void consume(){
-    IPC_key = ftok("interprocesscommunication",65); 
+    IPC_key = ftok("interprocesscommunication",65);
     sharedMemoryID = shmget(IPC_key,(bufferSize*16)+8,0666|IPC_CREAT); 
     sharedMemory= shmat(sharedMemoryID,NULL,0);
     memset(sharedMemory,0,(bufferSize*16)+8);
@@ -114,9 +115,14 @@ void consume(){
         semop(semaphoreSetId,&sem_op,1);
     }
 }   
-
+void signalHandler(int signum){
+    shmdt(sharedMemory);
+    shmctl(sharedMemoryID,IPC_RMID,NULL);
+    exit(signum);
+}
 
 int main(int argc, char** argv){
+    signal(SIGINT,signalHandler);
     bufferSize= stoi(argv[1]);
     printf("\e[1;1H\e[2J");
     cout<<"+-------------------------------------+"<<endl;
