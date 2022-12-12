@@ -84,7 +84,7 @@ void consume(){
     IPC_key = ftok("interprocesscommunication",65); 
     sharedMemoryID = shmget(IPC_key,(bufferSize*16)+8,0666|IPC_CREAT); 
     sharedMemory= shmat(sharedMemoryID,NULL,0);
-    memset(sharedMemory,(bufferSize*16)+8,0);
+    memset(sharedMemory,0,(bufferSize*16)+8);
 
     currentSize = (int *) sharedMemory;
     currentItem= (int *) sharedMemory+4;
