@@ -41,14 +41,13 @@ int main(int argc, char** argv){
     int commodityIndex = commodityToIndex[commodityName];
 
     key_t IPC_key = ftok("interprocesscommunication",65);
-    int sharedMemoryID = shmget(IPC_key,bufferSize+8,0666);
+    int sharedMemoryID = shmget(IPC_key,(bufferSize*16)+8,0666);
     void* sharedMemory= shmat(sharedMemoryID,NULL,0);
     int* currentSize = (int *) sharedMemory;
     int *currentItem = (int *) sharedMemory+4;
 
     struct sembuf sem_op;
     int semaphoreSetId =semget(IPC_key,3,0666);
-    
     pair<int,double>*array = (pair<int,double>* )sharedMemory+8;
 
     while(true){
