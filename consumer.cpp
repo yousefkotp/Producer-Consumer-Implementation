@@ -124,6 +124,9 @@ void signalHandler(int signum){
 
 int main(int argc, char** argv){
     signal(SIGINT,signalHandler);
+    signal(SIGTSTP,signalHandler);
+    signal(SIGTERM,signalHandler);
+    signal(SIGABRT,signalHandler);
     bufferSize= stoi(argv[1]);
     printf("\e[1;1H\e[2J");
     cout<<"+-------------------------------------+"<<endl;
