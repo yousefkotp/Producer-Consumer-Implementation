@@ -102,7 +102,7 @@ void consume(){
         semop(semaphoreSetId,&sem_op,1);
         sem_op = waitSemaphore(0);
         semop(semaphoreSetId,&sem_op,1);
-        cout<<"|"<<endl;
+        cout<<"+"<<endl;
         pair<int,double>p = prices[*currentItem];
         *currentItem = (*currentItem+1)%bufferSize;
         int commodityIndex = p.first;
@@ -134,6 +134,7 @@ int main(int argc, char** argv){
         printf(ANSI_COLOR_RESET);
         printf("|\n");
     }
+    cout<<"+-------------------------------------+"<<endl;
     consume();
     
     return 0;
