@@ -69,7 +69,7 @@ int main(int argc, char** argv){
         sem_op = signalSemaphore(2);
         semop(semaphoreSetId,&sem_op,1);
         std::cerr<<"sleeping for "<<timeOut<<" ms"<<endl;
-        sleep(timeOut/1000);
+        usleep(timeOut*1000);
     }
     
     return 0;
