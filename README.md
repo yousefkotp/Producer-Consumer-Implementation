@@ -77,7 +77,7 @@ make
 - Only one consumer process is allowed to run at a time.
 - The consumer process takes the following arguments in the following order:
     - Bounded buffer size.
-- The consumer process can be run using the following command:
+- A sample run for a consumer process with buffer size = 10 would be like this:
 ```bash
 ./consumer 10
 ```
@@ -90,7 +90,7 @@ make
     - The interval between two consecutive items produced by this producer in milliseconds.
     - Bounded buffer size.
 
-- The producer process can be run using the following command:
+- A sample run for producer process would be like this:
 ```bash
 ./producer GOLD 100 10 200 10
 ```
