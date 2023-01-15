@@ -3,8 +3,6 @@ An implementation of the [producer-consumer problem](https://afteracademy.com/bl
 
 ## Table of Content
 - [Producer-Consumer-Implementation](#producer-consumer-implementation)
-  - [Table of Content](#table-of-content)
-  - [Introduction](#introduction)
   - [Producer](#producer)
   - [Consumer](#consumer)
   - [Psuedo Code](#psuedo-code)
