@@ -56,8 +56,8 @@ void consumer() {
 }
 ```
 - You can find the detailed implementation for the producer and consumer processes in the following files:
-    - [producer.c](producer.c)
-    - [consumer.c](consumer.c)
+    - [producer.cpp](https://github.com/yousefkotp/Producer-Consumer-Implementation/blob/main/producer.cpp)
+    - [consumer.cpp](https://github.com/yousefkotp/Producer-Consumer-Implementation/blob/main/consumer.cpp)
 
 ## Requirements
 - [GCC](https://gcc.gnu.org/)
